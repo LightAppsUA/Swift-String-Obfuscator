@@ -62,7 +62,7 @@ class ObfuscateStringsRewritter: SyntaxRewriter {
                 ),
                 leftParen: SyntaxFactory.makeLeftParenToken(),
                 argumentList: SyntaxFactory.makeTupleExprElementList([bytesArg, encodingArg]),
-                rightParen: SyntaxFactory.makeRightParenToken(),
+                rightParen: SyntaxFactory.makeToken(.stringLiteral(")!"), presence: .present),
                 trailingClosure: nil,
                 additionalTrailingClosures: nil
             )

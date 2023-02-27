@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftSyntax
+import SwiftSyntaxParser
 
 public class StringObfuscator {
     public static func getObfuscatedContent(for sourceFile: URL) throws -> String {

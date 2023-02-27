@@ -10,8 +10,8 @@ let package = Package(
         .executable(name: "swift_string_obfuscator", targets: ["swift_string_obfuscator"]),
     ],
     dependencies: [
-        .package(name: "SwiftSyntax", url: "https://github.com/apple/swift-syntax.git", .exact("0.50300.0")),
-        .package(url: "https://github.com/apple/swift-argument-parser", from: "0.3.0"),
+        .package(name: "SwiftSyntax", url: "https://github.com/apple/swift-syntax.git", .exact("0.50700.1")),
+        .package(url: "https://github.com/apple/swift-argument-parser", from: "1.2.2"),
     ],
     targets: [
         .target(
@@ -23,7 +23,10 @@ let package = Package(
         ),
         .target(
             name: "SwiftStringObfuscatorCore",
-            dependencies: ["SwiftSyntax"]
+            dependencies: [
+                "SwiftSyntax",
+                .product(name: "SwiftSyntaxParser", package: "SwiftSyntax"),
+            ]
         ),
         .testTarget(
             name: "SwiftStringObfuscatorTests",

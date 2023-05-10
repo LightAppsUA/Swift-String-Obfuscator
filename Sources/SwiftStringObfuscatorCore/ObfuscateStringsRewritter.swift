@@ -17,11 +17,9 @@ class ObfuscateStringsRewritter: SyntaxRewriter {
     var state: State = .reading
     
     func integerLiteralElement(_ int: Int, addComma: Bool = true) -> ArrayElementSyntax {
-        TokenSyntax.integerLiteral("\(int)")
-        let literal = SyntaxFactory.makeIntegerLiteral("\(int)")
-        return SyntaxFactory.makeArrayElement(
-            expression: ExprSyntax(SyntaxFactory.makeIntegerLiteralExpr(digits: literal)),
-            trailingComma: addComma ? SyntaxFactory.makeCommaToken() : nil)
+        let literal = TokenSyntax.integerLiteral("\(int)")
+        
+        return ArrayElementSyntax(expression: ExprSyntax(IntegerLiteralExprSyntax(digits: literal)), trailingComma: addComma ? TokenSyntax.commaToken().withTrailingTrivia(.space) : nil)
     }
 
     override open func visit(_ node: StringLiteralExprSyntax) -> ExprSyntax {
@@ -33,40 +31,47 @@ class ObfuscateStringsRewritter: SyntaxRewriter {
         let bytes = origValue.bytes.enumerated().map { (i, element) -> ArrayElementSyntax in
             integerLiteralElement(Int(element), addComma: i < origValue.bytes.count - 1)
         }
-        let arrayElementList = SyntaxFactory.makeArrayElementList(bytes)
+        
+        let arrayElementList = ArrayElementListSyntax(bytes)
 
-        let bytesArg = SyntaxFactory.makeTupleExprElement(
-            label: SyntaxFactory.makeIdentifier("bytes"),
-            colon: SyntaxFactory.makeColonToken(leadingTrivia: .zero, trailingTrivia: .spaces(1)),
-            expression: ExprSyntax(SyntaxFactory.makeArrayExpr(
-                leftSquare: SyntaxFactory.makeLeftSquareBracketToken(),
+        let bytesArg = TupleExprElementSyntax(
+            label: TokenSyntax.identifier("bytes"),
+            colon: TokenSyntax.colonToken(trailingTrivia: .space),
+            expression: ArrayExprSyntax(
+                leftSquare: TokenSyntax.leftSquareBracketToken(),
                 elements: arrayElementList,
-                rightSquare: SyntaxFactory.makeRightSquareBracketToken())),
-            trailingComma: SyntaxFactory.makeCommaToken()
+                rightSquare: TokenSyntax.rightSquareBracketToken()),
+            trailingComma: TokenSyntax.commaToken()
         )
 
-        let encodingArg = SyntaxFactory.makeTupleExprElement(
-            label: SyntaxFactory.makeIdentifier("encoding"),
-            colon: SyntaxFactory.makeColonToken(leadingTrivia: .zero, trailingTrivia: .spaces(1)),
-            expression: ExprSyntax(SyntaxFactory.makeIdentifierExpr(identifier: SyntaxFactory.makeIdentifier(".utf8"),
-                                                                    declNameArguments: nil)),
-            trailingComma: nil
-        ).withLeadingTrivia(.spaces(1))
+        let encodingArg = TupleExprElementSyntax(
+            label: TokenSyntax.identifier("encoding"),
+            colon: TokenSyntax.colonToken(trailingTrivia: .space),
+            expression: ExprSyntax(IdentifierExprSyntax(identifier: TokenSyntax.identifier(".utf8"),
+                                                                    declNameArguments: nil))
+        ).withLeadingTrivia(.space)
 
-        let newCall =
-            SyntaxFactory.makeFunctionCallExpr(
+        var newCall =
+            ForcedValueExprSyntax(expression: FunctionCallExprSyntax(
                 calledExpression: ExprSyntax(
-                    SyntaxFactory.makeIdentifierExpr(
-                        identifier: SyntaxFactory.makeIdentifier("String"),
+                    IdentifierExprSyntax(
+                        identifier: TokenSyntax.identifier("String"),
                         declNameArguments: nil
                     )
                 ),
-                leftParen: SyntaxFactory.makeLeftParenToken(),
-                argumentList: SyntaxFactory.makeTupleExprElementList([bytesArg, encodingArg]),
-                rightParen: SyntaxFactory.makeToken(.stringLiteral(")!"), presence: .present),
-                trailingClosure: nil,
-                additionalTrailingClosures: nil
-            )
+                leftParen: TokenSyntax.leftParenToken(),
+                argumentList: TupleExprElementListSyntax([bytesArg, encodingArg]),
+                rightParen: TokenSyntax.rightParenToken()
+            ))
+        
+        if let originalLeadingTrivia = node.leadingTrivia {
+            newCall = newCall.withLeadingTrivia(originalLeadingTrivia)
+        }
+        
+        if let originalTrailingTrivia = node.trailingTrivia {
+            newCall = newCall.withTrailingTrivia(originalTrailingTrivia)
+        }
+        
         return super.visit(newCall)
     }
 

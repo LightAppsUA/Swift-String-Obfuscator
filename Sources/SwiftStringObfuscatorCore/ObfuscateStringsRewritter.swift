@@ -17,6 +17,7 @@ class ObfuscateStringsRewritter: SyntaxRewriter {
     var state: State = .reading
     
     func integerLiteralElement(_ int: Int, addComma: Bool = true) -> ArrayElementSyntax {
+        TokenSyntax.integerLiteral("\(int)")
         let literal = SyntaxFactory.makeIntegerLiteral("\(int)")
         return SyntaxFactory.makeArrayElement(
             expression: ExprSyntax(SyntaxFactory.makeIntegerLiteralExpr(digits: literal)),
@@ -69,12 +70,12 @@ class ObfuscateStringsRewritter: SyntaxRewriter {
         return super.visit(newCall)
     }
 
-    override func visit(_ token: TokenSyntax) -> Syntax {
+    override func visit(_ token: TokenSyntax) -> TokenSyntax {
         let withoutSpaces = token.leadingTrivia.filter { if case .spaces = $0 { return false }; return true }
         guard withoutSpaces.count > 1 else { return super.visit(token) }
         let lastNewLine = withoutSpaces.last
         let commandLine = withoutSpaces[withoutSpaces.count-2]
-        
+
         if state == .reading, case .newlines(1) = lastNewLine, case .lineComment("//:obfuscate") = commandLine {
             state = .command
         }

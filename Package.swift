@@ -14,7 +14,7 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.2.2"),
     ],
     targets: [
-        .target(
+        .executableTarget(
             name: "swift_string_obfuscator",
             dependencies: [
                 "SwiftStringObfuscatorCore",

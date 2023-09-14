@@ -98,6 +98,8 @@ struct FileHandlerOutputStream: TextOutputStream {
     }
 
     mutating func write(_ string: String) {
+        try? fileHandle.truncate(atOffset: 0) // Test solution for bad output file
+        
         if let data = string.data(using: encoding) {
             fileHandle.write(data)
         }

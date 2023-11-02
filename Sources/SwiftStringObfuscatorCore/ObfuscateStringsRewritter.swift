@@ -28,6 +28,11 @@ class ObfuscateStringsRewritter: SyntaxRewriter {
         }
         guard case .command = state else { return super.visit(node) }
         let origValue = "\(node.segments)"
+        
+        if origValue.contains("\\(") {
+            return super.visit(node)
+        }
+        
         let bytes = origValue.bytes.enumerated().map { (i, element) -> ArrayElementSyntax in
             integerLiteralElement(Int(element), addComma: i < origValue.bytes.count - 1)
         }
@@ -76,14 +81,10 @@ class ObfuscateStringsRewritter: SyntaxRewriter {
     }
 
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
-        let withoutSpaces = token.leadingTrivia.filter { if case .spaces = $0 { return false }; return true }
-        guard withoutSpaces.count > 1 else { return super.visit(token) }
-        let lastNewLine = withoutSpaces.last
-        let commandLine = withoutSpaces[withoutSpaces.count-2]
-
-        if state == .reading, case .newlines(1) = lastNewLine, case .lineComment("//:obfuscate") = commandLine {
+        if state == .reading {
             state = .command
         }
+        
         return super.visit(token)
     }
 }

@@ -22,8 +22,29 @@ struct SwiftStringObfuscator: ParsableCommand {
     mutating func run() throws {
         let inUrl = URL(fileURLWithPath: sourceFile)
         let outUrl = URL(fileURLWithPath: targetFile)
-        try! StringObfuscator.obfuscateContent(sourceFile: inUrl, targetFile: outUrl)
+        
+        eraseFileContent(atPath: targetFile)
+        
+        try StringObfuscator.obfuscateContent(sourceFile: inUrl, targetFile: outUrl)
     }
+    
+    func eraseFileContent(atPath filePath: String) {
+        do {
+            let fileURL = URL(fileURLWithPath: filePath)
+            
+            // Open file for writing
+            let fileHandle = try FileHandle(forWritingTo: fileURL)
+            
+            // Truncate the file content
+            fileHandle.truncateFile(atOffset: 0)
+            
+            // Close the file handle
+            fileHandle.closeFile()
+        } catch {
+            print("Error erasing file content: \(error.localizedDescription)")
+        }
+    }
+
 }
 
 SwiftStringObfuscator.main()

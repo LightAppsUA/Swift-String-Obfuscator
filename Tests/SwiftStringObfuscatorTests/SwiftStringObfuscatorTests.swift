@@ -39,9 +39,9 @@ final class SwiftStringObfuscatorTests: XCTestCase {
     """)
     
     let sampleObfuscatedOutput = """
-    let apiKey = String(bytes: [115, 111, 109, 101, 116, 104, 105, 110, 103, 45, 115, 101, 99, 114, 101, 116], encoding: .utf8)!
+    let apiKey = String(data: Data(base64Encoded: String(bytes: [99, 50, 57, 116, 90, 88, 82, 111, 97, 87, 53, 110, 76, 88, 78, 108, 89, 51, 74, 108, 100, 65, 61, 61], encoding: .utf8)!)!, encoding: .utf8)!
 
-    let apiKey2 = String(bytes: [115, 111, 109, 101, 116, 104, 105, 110, 103, 45, 115, 101, 99, 114, 101, 116, 45, 119, 105, 116, 104, 111, 117, 116, 45, 115, 112, 97, 99, 101, 115], encoding: .utf8)!
+    let apiKey2 = String(data: Data(base64Encoded: String(bytes: [99, 50, 57, 116, 90, 88, 82, 111, 97, 87, 53, 110, 76, 88, 78, 108, 89, 51, 74, 108, 100, 67, 49, 51, 97, 88, 82, 111, 98, 51, 86, 48, 76, 88, 78, 119, 89, 87, 78, 108, 99, 119, 61, 61], encoding: .utf8)!)!, encoding: .utf8)!
 
     //useless line, only for test purposes
 
@@ -50,26 +50,26 @@ final class SwiftStringObfuscatorTests: XCTestCase {
     struct XStruct {
         let x: Int
 
-        let apiKey3 =  String(bytes: [107, 101, 121, 45, 105, 110, 45, 115, 116, 114, 117, 99, 116], encoding: .utf8)!
+        let apiKey3 =  String(data: Data(base64Encoded: String(bytes: [97, 50, 86, 53, 76, 87, 108, 117, 76, 88, 78, 48, 99, 110, 86, 106, 100, 65, 61, 61], encoding: .utf8)!)!, encoding: .utf8)!
 
         var param: String {
-            return String(bytes: [107, 101, 121, 45, 105, 110, 45, 99, 111, 109, 112, 117, 116, 101, 100, 45, 112, 114, 111, 112, 101, 114, 116, 121], encoding: .utf8)!
+            return String(data: Data(base64Encoded: String(bytes: [97, 50, 86, 53, 76, 87, 108, 117, 76, 87, 78, 118, 98, 88, 66, 49, 100, 71, 86, 107, 76, 88, 66, 121, 98, 51, 66, 108, 99, 110, 82, 53], encoding: .utf8)!)!, encoding: .utf8)!
         }
 
         var dynamic2: String {
-            String(bytes: [107, 101, 121, 45, 105, 110, 45, 99, 111, 109, 112, 117, 116, 101, 100, 45, 112, 114, 111, 112, 101, 114, 116, 121, 45, 50], encoding: .utf8)!
+            String(data: Data(base64Encoded: String(bytes: [97, 50, 86, 53, 76, 87, 108, 117, 76, 87, 78, 118, 98, 88, 66, 49, 100, 71, 86, 107, 76, 88, 66, 121, 98, 51, 66, 108, 99, 110, 82, 53, 76, 84, 73, 61], encoding: .utf8)!)!, encoding: .utf8)!
         }
     }
 
     class Y {
-        static let keyInClass: String = String(bytes: [97, 112, 105, 45, 107, 101, 121, 45, 105, 110, 45, 99, 108, 97, 115, 115], encoding: .utf8)!
+        static let keyInClass: String = String(data: Data(base64Encoded: String(bytes: [89, 88, 66, 112, 76, 87, 116, 108, 101, 83, 49, 112, 98, 105, 49, 106, 98, 71, 70, 122, 99, 119, 61, 61], encoding: .utf8)!)!, encoding: .utf8)!
 
         func apiFuncParam(_ key: String) { return }
     }
 
     func test() {
         let testClass = Y()
-        testClass.apiFuncParam(String(bytes: [97, 112, 105, 95, 107, 101, 121, 95, 102, 117, 110, 99, 95, 112, 97, 114, 97, 109], encoding: .utf8)!)
+        testClass.apiFuncParam(String(data: Data(base64Encoded: String(bytes: [89, 88, 66, 112, 88, 50, 116, 108, 101, 86, 57, 109, 100, 87, 53, 106, 88, 51, 66, 104, 99, 109, 70, 116], encoding: .utf8)!)!, encoding: .utf8)!)
     }
     """
     

@@ -15,115 +15,93 @@ enum State {
 
 class ObfuscateStringsRewritter: SyntaxRewriter {
     var state: State = .reading
-    
+
     func integerLiteralElement(_ int: Int, addComma: Bool = true) -> ArrayElementSyntax {
         let literal = TokenSyntax.integerLiteral("\(int)")
-        
-        return ArrayElementSyntax(expression: ExprSyntax(IntegerLiteralExprSyntax(digits: literal)), trailingComma: addComma ? TokenSyntax.commaToken().withTrailingTrivia(.space) : nil)
+
+        return ArrayElementSyntax(expression: IntegerLiteralExprSyntax(literal: literal), trailingComma: addComma ? TokenSyntax.commaToken(trailingTrivia: .space) : nil)
     }
 
     func base64Encode(_ input: String) -> String? {
         if let data = input.data(using: .utf8) {
             return data.base64EncodedString()
         }
-        
+
         return nil
     }
-    
+
     override open func visit(_ node: StringLiteralExprSyntax) -> ExprSyntax {
         defer {
             state = .reading
         }
         guard case .command = state else { return super.visit(node) }
         let origValue = "\(node.segments)"
-        
+
         if origValue.contains("\\(") {
             return super.visit(node)
         }
-        
+
         guard let base64Encoded = base64Encode(origValue) else { return super.visit(node) }
-        
-        let bytes = base64Encoded.bytes.enumerated().map { (i, element) -> ArrayElementSyntax in
+
+        let bytes = base64Encoded.bytes.enumerated().map { i, element -> ArrayElementSyntax in
             integerLiteralElement(Int(element), addComma: i < base64Encoded.bytes.count - 1)
         }
-        
+
         let arrayElementList = ArrayElementListSyntax(bytes)
 
-        let stringBytesArg = TupleExprElementSyntax(
+        let stringBytesArg = LabeledExprSyntax(
             label: TokenSyntax.identifier("bytes"),
             colon: TokenSyntax.colonToken(trailingTrivia: .space),
             expression: ArrayExprSyntax(
-                leftSquare: TokenSyntax.leftSquareBracketToken(),
+                leftSquare: TokenSyntax.leftSquareToken(),
                 elements: arrayElementList,
-                rightSquare: TokenSyntax.rightSquareBracketToken()),
+                rightSquare: TokenSyntax.rightSquareToken()
+            ),
             trailingComma: TokenSyntax.commaToken()
         )
 
-        let stringEncodingArg = TupleExprElementSyntax(
+        let stringEncodingArg = LabeledExprSyntax(
+            leadingTrivia: .space,
             label: TokenSyntax.identifier("encoding"),
             colon: TokenSyntax.colonToken(trailingTrivia: .space),
-            expression: ExprSyntax(IdentifierExprSyntax(identifier: TokenSyntax.identifier(".utf8"),
-                                                                    declNameArguments: nil))
-        ).withLeadingTrivia(.space)
+            expression: DeclReferenceExprSyntax(baseName: TokenSyntax.identifier(".utf8"))
+        )
 
-        var stringBytesEncodingSyntax =
-            ForcedValueExprSyntax(expression: FunctionCallExprSyntax(
-                calledExpression: ExprSyntax(
-                    IdentifierExprSyntax(
-                        identifier: TokenSyntax.identifier("String"),
-                        declNameArguments: nil
-                    )
-                ),
-                leftParen: TokenSyntax.leftParenToken(),
-                argumentList: TupleExprElementListSyntax([stringBytesArg, stringEncodingArg]),
-                rightParen: TokenSyntax.rightParenToken()
-            ))
-        
-        let dataBase64EncodedArg = TupleExprElementSyntax(
+        let stringBytesEncodingSyntax = ForceUnwrapExprSyntax(expression: FunctionCallExprSyntax(
+            calledExpression: DeclReferenceExprSyntax(baseName: TokenSyntax.identifier("String")),
+            leftParen: TokenSyntax.leftParenToken(),
+            arguments: LabeledExprListSyntax([stringBytesArg, stringEncodingArg]),
+            rightParen: TokenSyntax.rightParenToken()
+        ))
+
+        let dataBase64EncodedArg = LabeledExprSyntax(
             label: TokenSyntax.identifier("base64Encoded"),
             colon: TokenSyntax.colonToken(trailingTrivia: .space),
             expression: stringBytesEncodingSyntax
         )
-        
-        let dataBase64EncodedEncodingSyntax = ForcedValueExprSyntax(expression: FunctionCallExprSyntax(
-            calledExpression: ExprSyntax(
-                IdentifierExprSyntax(
-                    identifier: TokenSyntax.identifier("Data"),
-                    declNameArguments: nil
-                )
-            ),
+
+        let dataBase64EncodedEncodingSyntax = ForceUnwrapExprSyntax(expression: FunctionCallExprSyntax(
+            calledExpression: DeclReferenceExprSyntax(baseName: TokenSyntax.identifier("Data")),
             leftParen: TokenSyntax.leftParenToken(),
-            argumentList: TupleExprElementListSyntax([dataBase64EncodedArg]),
+            arguments: LabeledExprListSyntax([dataBase64EncodedArg]),
             rightParen: TokenSyntax.rightParenToken()
         ))
-        
-        let stringDataArg = TupleExprElementSyntax(
+
+        let stringDataArg = LabeledExprSyntax(
             label: TokenSyntax.identifier("data"),
             colon: TokenSyntax.colonToken(trailingTrivia: .space),
             expression: dataBase64EncodedEncodingSyntax,
             trailingComma: TokenSyntax.commaToken()
         )
-        
-        var stringDataEncodingSyntax = ForcedValueExprSyntax(expression: FunctionCallExprSyntax(
-            calledExpression: ExprSyntax(
-                IdentifierExprSyntax(
-                    identifier: TokenSyntax.identifier("String"),
-                    declNameArguments: nil
-                )
-            ),
+
+        let stringDataEncodingSyntax = ForceUnwrapExprSyntax(expression: FunctionCallExprSyntax(
+            leadingTrivia: node.leadingTrivia, calledExpression: DeclReferenceExprSyntax(baseName: TokenSyntax.identifier("String")),
             leftParen: TokenSyntax.leftParenToken(),
-            argumentList: TupleExprElementListSyntax([stringDataArg, stringEncodingArg]),
-            rightParen: TokenSyntax.rightParenToken()
+            arguments: LabeledExprListSyntax([stringDataArg, stringEncodingArg]),
+            rightParen: TokenSyntax.rightParenToken(),
+            trailingTrivia: node.trailingTrivia
         ))
-        
-        if let originalLeadingTrivia = node.leadingTrivia {
-            stringDataEncodingSyntax = stringDataEncodingSyntax.withLeadingTrivia(originalLeadingTrivia)
-        }
-        
-        if let originalTrailingTrivia = node.trailingTrivia {
-            stringDataEncodingSyntax = stringDataEncodingSyntax.withTrailingTrivia(originalTrailingTrivia)
-        }
-        
+
         return super.visit(stringDataEncodingSyntax)
     }
 
@@ -131,7 +109,7 @@ class ObfuscateStringsRewritter: SyntaxRewriter {
         if state == .reading {
             state = .command
         }
-        
+
         return super.visit(token)
     }
 }

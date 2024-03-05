@@ -1,6 +1,6 @@
-import XCTest
 @testable import SwiftStringObfuscatorCore
 import SwiftSyntax
+import XCTest
 
 final class SwiftStringObfuscatorTests: XCTestCase {
     let sampleFileURL = urlTempString("""
@@ -37,7 +37,7 @@ final class SwiftStringObfuscatorTests: XCTestCase {
         testClass.apiFuncParam("api_key_func_param")
     }
     """)
-    
+
     let sampleObfuscatedOutput = """
     let apiKey = String(data: Data(base64Encoded: String(bytes: [99, 50, 57, 116, 90, 88, 82, 111, 97, 87, 53, 110, 76, 88, 78, 108, 89, 51, 74, 108, 100, 65, 61, 61], encoding: .utf8)!)!, encoding: .utf8)!
 
@@ -72,22 +72,22 @@ final class SwiftStringObfuscatorTests: XCTestCase {
         testClass.apiFuncParam(String(data: Data(base64Encoded: String(bytes: [89, 88, 66, 112, 88, 50, 116, 108, 101, 86, 57, 109, 100, 87, 53, 106, 88, 51, 66, 104, 99, 109, 70, 116], encoding: .utf8)!)!, encoding: .utf8)!)
     }
     """
-    
+
     func testObfuscator() throws {
         let obfuscated = try? StringObfuscator.getObfuscatedContent(for: sampleFileURL)
-         
+
         XCTAssertEqual(obfuscated, sampleObfuscatedOutput)
     }
 
     static var allTests = [("testObfuscator", testObfuscator)]
-    
+
     static func urlTempString(_ str: String) -> URL {
         let directory = NSTemporaryDirectory()
         let fileName = NSUUID().uuidString
         let fullURL = NSURL.fileURL(withPathComponents: [directory, fileName])!
-        
+
         try! str.write(to: fullURL, atomically: true, encoding: .utf8)
-        
+
         return fullURL
     }
 }

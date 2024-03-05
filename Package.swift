@@ -1,4 +1,4 @@
-// swift-tools-version:5.7
+// swift-tools-version:5.8
 import PackageDescription
 
 let package = Package(
@@ -10,8 +10,8 @@ let package = Package(
         .executable(name: "swift_string_obfuscator", targets: ["swift_string_obfuscator"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-syntax", from: "508.0.0"),
-        .package(url: "https://github.com/apple/swift-argument-parser", from: "1.2.2")
+        .package(url: "https://github.com/apple/swift-syntax", from: "510.0.0"),
+        .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0"),
     ],
     targets: [
         .executableTarget(
@@ -24,7 +24,8 @@ let package = Package(
         .target(
             name: "SwiftStringObfuscatorCore",
             dependencies: [
-                .product(name: "SwiftSyntaxParser", package: "swift-syntax")
+                .product(name: "SwiftSyntax", package: "swift-syntax"),
+                .product(name: "SwiftParser", package: "swift-syntax"),
             ]
         ),
         .testTarget(

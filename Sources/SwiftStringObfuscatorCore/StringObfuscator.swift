@@ -6,20 +6,22 @@
 //
 
 import Foundation
+import SwiftParser
 import SwiftSyntax
-import SwiftSyntaxParser
 
 public class StringObfuscator {
     public static func getObfuscatedContent(for sourceFile: URL) throws -> String {
-        let sourceFile = try SyntaxParser.parse(sourceFile)
+        let fileContents = try String(contentsOf: sourceFile)
+        let sourceFile = Parser.parse(source: fileContents)
         var output = ""
         let obfuscated = ObfuscateStringsRewritter().visit(sourceFile)
         obfuscated.write(to: &output)
         return output
     }
-    
+
     public static func obfuscateContent(sourceFile: URL, targetFile: URL) throws {
-        let sourceFile = try SyntaxParser.parse(sourceFile)
+        let fileContents = try String(contentsOf: sourceFile)
+        let sourceFile = Parser.parse(source: fileContents)
         let fileHandle = try FileHandle(forWritingTo: targetFile)
         var output = FileHandlerOutputStream(fileHandle)
         let obfuscated = ObfuscateStringsRewritter().visit(sourceFile)

@@ -15,7 +15,7 @@ final class SwiftStringObfuscatorTests: XCTestCase {
     struct XStruct {
         let x: Int
 
-        let apiKey3 =  "key-in-struct"
+        let apiKey3 =  "key-in-struct" // New
 
         var param: String {
             return "key-in-computed-property"
@@ -50,7 +50,7 @@ final class SwiftStringObfuscatorTests: XCTestCase {
     struct XStruct {
         let x: Int
 
-        let apiKey3 =  String(data: Data(base64Encoded: String(bytes: [97, 50, 86, 53, 76, 87, 108, 117, 76, 88, 78, 48, 99, 110, 86, 106, 100, 65, 61, 61], encoding: .utf8)!)!, encoding: .utf8)!
+        let apiKey3 =  String(data: Data(base64Encoded: String(bytes: [97, 50, 86, 53, 76, 87, 108, 117, 76, 88, 78, 48, 99, 110, 86, 106, 100, 65, 61, 61], encoding: .utf8)!)!, encoding: .utf8)! // New
 
         var param: String {
             return String(data: Data(base64Encoded: String(bytes: [97, 50, 86, 53, 76, 87, 108, 117, 76, 87, 78, 118, 98, 88, 66, 49, 100, 71, 86, 107, 76, 88, 66, 121, 98, 51, 66, 108, 99, 110, 82, 53], encoding: .utf8)!)!, encoding: .utf8)!

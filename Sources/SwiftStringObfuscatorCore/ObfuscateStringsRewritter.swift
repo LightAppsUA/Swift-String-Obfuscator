@@ -94,13 +94,16 @@ class ObfuscateStringsRewritter: SyntaxRewriter {
             trailingComma: TokenSyntax.commaToken()
         )
 
-        let stringDataEncodingSyntax = ForceUnwrapExprSyntax(expression: FunctionCallExprSyntax(
-            leadingTrivia: node.leadingTrivia, calledExpression: DeclReferenceExprSyntax(baseName: TokenSyntax.identifier("String")),
-            leftParen: TokenSyntax.leftParenToken(),
-            arguments: LabeledExprListSyntax([stringDataArg, stringEncodingArg]),
-            rightParen: TokenSyntax.rightParenToken(),
+        let stringDataEncodingSyntax = ForceUnwrapExprSyntax(
+            leadingTrivia: node.leadingTrivia,
+            expression: FunctionCallExprSyntax(
+                calledExpression: DeclReferenceExprSyntax(baseName: TokenSyntax.identifier("String")),
+                leftParen: TokenSyntax.leftParenToken(),
+                arguments: LabeledExprListSyntax([stringDataArg, stringEncodingArg]),
+                rightParen: TokenSyntax.rightParenToken()
+            ),
             trailingTrivia: node.trailingTrivia
-        ))
+        )
 
         return super.visit(stringDataEncodingSyntax)
     }
